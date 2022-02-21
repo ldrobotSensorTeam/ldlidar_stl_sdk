@@ -5,7 +5,7 @@
 >此SDK仅适用于深圳乐动机器人有限公司销售的激光雷达产品，产品型号为:
 > - LDROBOT LiDAR LD06
 > - LDROBOT LiDAR LD19
-## 0. 获取雷达的ROS功能包
+## 0. 获取雷达的Linux SDK
 ```bash
 $ cd ~
 
@@ -48,7 +48,7 @@ $ make
 > This SDK is only applicable to the LiDAR products sold by Shenzhen LDROBOT Co., LTD. The product models are :
 > - LDROBOT LiDAR LD06
 > - LDROBOT LiDAR LD19
-## 0. get LiDAR ROS Package
+## 0. get LiDAR Linux SDK
 ```bash
 $ cd ~
 

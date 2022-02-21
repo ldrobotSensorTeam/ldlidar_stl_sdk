@@ -28,7 +28,7 @@
 #include "lipkg.h"
 
 int main(int argc, char **argv) {
-  std::cout << "[ldrobot] SDK Pack Version is " << "v2.2.1" << std::endl;
+  std::cout << "[ldrobot] SDK Pack Version is " << "v2.2.2" << std::endl;
   
   if (argc != 2) {
     std::cout << "[ldrobot] please input: ./ldlidar <serial_number>" << std::endl;
