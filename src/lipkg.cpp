@@ -117,7 +117,7 @@ bool LiPkg::AnalysisOne(uint8_t byte) {
       break;
   }
 
-  return false;  // BUG 此处未加return会有bug，解包bug已修复
+  return false;
 }
 
 bool LiPkg::Parse(const uint8_t *data, long len) {
@@ -143,13 +143,13 @@ bool LiPkg::Parse(const uint8_t *data, long len) {
           if (data.angle >= 360.0) {
             data.angle -= 360.0;
           }
-          data.confidence = pkg.point[i].confidence;
+          data.intensity = pkg.point[i].intensity;
           one_pkg_[i] = data;
           // std::cout << "data.angle " << data.angle << " data.distance " <<
           // data.distance
-          //           << " data.confidence " << (int)data.confidence <<
+          //           << " data.intensity " << (int)data.intensity <<
           //           std::endl;
-          frame_tmp_.push_back(PointData(data.angle, data.distance, data.confidence));
+          frame_tmp_.push_back(PointData(data.angle, data.distance, data.intensity));
         }
         // prevent angle invert
         one_pkg_.back().angle = end;
