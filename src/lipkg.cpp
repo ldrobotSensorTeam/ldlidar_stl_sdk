@@ -125,7 +125,7 @@ bool LiPkg::Parse(const uint8_t *data, long len) {
     if (AnalysisOne(data[i])) {
       // parse a package is success
       double diff = (pkg.end_angle / 100 - pkg.start_angle / 100 + 360) % 360;
-      if (diff > (double)pkg.speed * POINT_PER_PACK / 2300 * 3 / 2) {
+      if (diff > (double)pkg.speed * POINT_PER_PACK / kPointFrequence * 3 / 2) {
         error_times_++;
       } else {
         speed_ = pkg.speed; // Degrees per second
