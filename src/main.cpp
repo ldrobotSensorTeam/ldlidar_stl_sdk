@@ -28,14 +28,14 @@
 #include "lipkg.h"
 
 int main(int argc, char **argv) {
-  std::cout << "[ldrobot] SDK Pack Version is " << "v2.2.4" << std::endl;
+  std::cout << "[ldrobot] SDK Pack Version is " << "v2.2.5" << std::endl;
   
   if (argc != 2) {
-    std::cout << "[ldrobot] please input: ./ldlidar <serial_number>" << std::endl;
+    std::cout << "[ldrobot] please input: ./ldlidar_stl <serial_number>" << std::endl;
     std::cout << "[ldrobot] example:" << std::endl;
-    std::cout << "./ldlidar /dev/ttyUSB*" << std::endl;
+    std::cout << "./ldlidar_stl /dev/ttyUSB*" << std::endl;
     std::cout << "or" << std::endl;
-    std::cout << "./ldlidar /dev/ttyS*" << std::endl;
+    std::cout << "./ldlidar_stl /dev/ttyS*" << std::endl;
     exit(EXIT_FAILURE);
   }
 
