@@ -61,15 +61,14 @@ uint8_t CalCRC8(const uint8_t *data, uint16_t data_len) {
   return crc;
 }
 
-LiPkg::LiPkg()
-    : timestamp_(0),
+LiPkg::LiPkg(std::string product_name)
+    : product_name_(product_name),
+      timestamp_(0),
       speed_(0),
       error_times_(0),
-      is_frame_ready_(false),
-      is_pkg_ready_(false) {
-}
+      is_frame_ready_(false){
 
-double LiPkg::GetSpeed(void) { return speed_ / 360.0; }
+}
 
 bool LiPkg::AnalysisOne(uint8_t byte) {
   static enum {
@@ -101,11 +100,11 @@ bool LiPkg::AnalysisOne(uint8_t byte) {
     case DATA:
       tmp[count++] = byte;
       if (count >= pkg_count) {
-        memcpy((uint8_t *)&pkg, tmp, pkg_count);
-        uint8_t crc = CalCRC8((uint8_t *)&pkg, pkg_count - 1);
+        memcpy((uint8_t *)&pkg_, tmp, pkg_count);
+        uint8_t crc = CalCRC8((uint8_t *)&pkg_, pkg_count - 1);
         state = HEADER;
         count = 0;
-        if (crc == pkg.crc8) {
+        if (crc == pkg_.crc8) {
           return true;
         } else {
           error_times_++;
@@ -117,43 +116,33 @@ bool LiPkg::AnalysisOne(uint8_t byte) {
       break;
   }
 
-  return false;
+  return false; 
 }
 
 bool LiPkg::Parse(const uint8_t *data, long len) {
   for (int i = 0; i < len; i++) {
     if (AnalysisOne(data[i])) {
       // parse a package is success
-      double diff = (pkg.end_angle / 100 - pkg.start_angle / 100 + 360) % 360;
-      if (diff > (double)pkg.speed * POINT_PER_PACK / kPointFrequence * 3 / 2) {
+      double diff = (pkg_.end_angle / 100 - pkg_.start_angle / 100 + 360) % 360;
+      if (diff > (double)pkg_.speed * POINT_PER_PACK / kPointFrequence * 3 / 2) {
         error_times_++;
       } else {
-        speed_ = pkg.speed; // Degrees per second
-        timestamp_ = pkg.timestamp; // In milliseconds
-        uint32_t diff = ((uint32_t)pkg.end_angle + 36000 - (uint32_t)pkg.start_angle) % 36000;
+        speed_ = pkg_.speed; // Degrees per second
+        timestamp_ = pkg_.timestamp; // In milliseconds
+        uint32_t diff = ((uint32_t)pkg_.end_angle + 36000 - (uint32_t)pkg_.start_angle) % 36000;
         float step = diff / (POINT_PER_PACK - 1) / 100.0;
-        float start = (double)pkg.start_angle / 100.0;
-        float end = (double)(pkg.end_angle % 36000) / 100.0;
-        // std::cout << "start " << start << std::endl;
-        // std::cout << "end " << end << std::endl;
+        float start = (double)pkg_.start_angle / 100.0;
+        float end = (double)(pkg_.end_angle % 36000) / 100.0;
         PointData data;
         for (int i = 0; i < POINT_PER_PACK; i++) {
-          data.distance = pkg.point[i].distance;
+          data.distance = pkg_.point[i].distance;
           data.angle = start + i * step;
           if (data.angle >= 360.0) {
             data.angle -= 360.0;
           }
-          data.intensity = pkg.point[i].intensity;
-          one_pkg_[i] = data;
-          // std::cout << "data.angle " << data.angle << " data.distance " <<
-          // data.distance
-          //           << " data.intensity " << (int)data.intensity <<
-          //           std::endl;
+          data.intensity = pkg_.point[i].intensity;
           frame_tmp_.push_back(PointData(data.angle, data.distance, data.intensity));
         }
-        // prevent angle invert
-        one_pkg_.back().angle = end;
-        is_pkg_ready_ = true;
       }
     }
   }
@@ -170,20 +159,21 @@ bool LiPkg::AssemblePacket() {
     // wait for enough data, need enough data to show a circle
     // enough data has been obtained
     if ((n.angle < 20.0) && (last_angle > 340.0)) {
-      // std::cout << "count: " << count << std::endl;
       if ((count * GetSpeed()) > (kPointFrequence * 1.4)) {
         frame_tmp_.erase(frame_tmp_.begin(), frame_tmp_.begin() + count - 1);
         return false;
       }
       data.insert(data.begin(), frame_tmp_.begin(), frame_tmp_.begin() + count);
-      // std::cout << "data.size() " << data.size() << std::endl;
+      // ROS_INFO_STREAM("[ldrobot] filter front poit size: " << data.size());
       Tofbf tofbfLd06(speed_);
       tmp = tofbfLd06.NearFilter(data);
-
       std::sort(tmp.begin(), tmp.end(), [](PointData a, PointData b) { return a.angle < b.angle; });
+      // ROS_INFO_STREAM("[ldrobot] filter back poit size: " << tmp.size());
       if (tmp.size() > 0) {
-        lidar_frame_data_ = tmp;
-        is_frame_ready_ = true;
+        if (tmp.front().angle < 1.0) {
+          FillLaserScanData(tmp);
+          SetFrameReady();
+        }
         frame_tmp_.erase(frame_tmp_.begin(), frame_tmp_.begin() + count);
         return true;
       }
@@ -195,11 +185,53 @@ bool LiPkg::AssemblePacket() {
   return false;
 }
 
-Points2D LiPkg::GetData() { return lidar_frame_data_; }
-
-const std::array<PointData, POINT_PER_PACK>& LiPkg::GetPkgData(void) {
-  is_pkg_ready_ = false;
-  return one_pkg_;
+double LiPkg::GetSpeed(void) {
+  return (speed_ / 360.0);  // unit is hz
 }
+
+uint16_t LiPkg::GetSpeedOrigin(void) {
+  return speed_;
+}
+
+uint16_t LiPkg::GetTimestamp(void) {
+  return timestamp_; 
+}
+
+bool LiPkg::IsFrameReady(void) {
+  return is_frame_ready_; 
+}  
+
+void LiPkg::ResetFrameReady(void) {
+  {
+    std::lock_guard<std::mutex> lock(mutex_lock_);
+    is_frame_ready_ = false;
+  }
+}
+
+void LiPkg::SetFrameReady(void) {
+  {
+    std::lock_guard<std::mutex> lock(mutex_lock_);
+    is_frame_ready_ = true;
+  }
+}
+
+long LiPkg::GetErrorTimes(void) {
+  return error_times_; 
+}
+
+void LiPkg::CommReadCallback(const char *byte, size_t len) {
+  if (this->Parse((uint8_t *)byte, len)) {
+    this->AssemblePacket();
+  }
+}
+
+Points2D LiPkg::GetLaserScanData(void) {
+  return laser_scan_data_;
+}
+
+void LiPkg::FillLaserScanData(Points2D& src) {
+  laser_scan_data_ = src;
+}
+
 /********************* (C) COPYRIGHT SHENZHEN LDROBOT CO., LTD *******END OF
  * FILE ********/

@@ -32,8 +32,7 @@ struct PointData {
   uint16_t distance;   // Distance is measured in millimeters
   uint8_t intensity;  // Intensity is 0 to 255
   // Cartesian coordinate representation
-  
-  double x;          // LD TOFLiDAR no support x an y param
+  double x;
   double y;
   PointData(float angle, uint16_t distance, uint8_t intensity, double x = 0,
             double y = 0) {

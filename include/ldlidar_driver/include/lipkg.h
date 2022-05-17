@@ -22,11 +22,14 @@
 #ifndef __LIPKG_H
 #define __LIPKG_H
 
+// #include "ros_api.h"
 #include <stdint.h>
 
 #include <array>
 #include <iostream>
 #include <vector>
+#include <mutex>
+#include <functional>
 
 #include "pointdata.h"
 
@@ -54,42 +57,43 @@ typedef struct __attribute__((packed)) {
 
 class LiPkg {
  public:
-  LiPkg();
+  const int kPointFrequence = 4500;
+
+  LiPkg(std::string product_name);
   // get Lidar spin speed (Hz)
   double GetSpeed(void); 
+  // get lidar spind speed (degree per second) origin
+  uint16_t GetSpeedOrigin(void);
   // get time stamp of the packet
-  uint16_t GetTimestamp(void) { return timestamp_; }  
-  // a packet is ready                                              
-  bool IsPkgReady(void) { return is_pkg_ready_; }  
+  uint16_t GetTimestamp(void);  
   // Get lidar data frame ready flag  
-  bool IsFrameReady(void) { return is_frame_ready_; }  
+  bool IsFrameReady(void);  
   // Lidar data frame readiness flag reset
-  void ResetFrameReady(void) { is_frame_ready_ = false; }
+  void ResetFrameReady(void);
+  void SetFrameReady(void);
   // the number of errors in parser process of lidar data frame
-  long GetErrorTimes(void) { return error_times_; } 
-  // Get original Lidar data package
-  const std::array<PointData, POINT_PER_PACK>& GetPkgData(void);  
-  // parse single packet
+  long GetErrorTimes(void);  
+  void CommReadCallback(const char *byte, size_t len);
+  Points2D GetLaserScanData(void);
+  
+ private:
+  std::string product_name_;
+  uint16_t timestamp_;
+  double speed_;
+  long error_times_;
+  bool is_frame_ready_;
+  LiDARFrameTypeDef pkg_;
+  std::vector<uint8_t> data_tmp_;
+  Points2D frame_tmp_;
+  Points2D laser_scan_data_;
+  std::mutex  mutex_lock_;
+
+   // parse single packet
   bool AnalysisOne(uint8_t byte);
   bool Parse(const uint8_t* data, long len);  
   // combine stantard data into data frames and calibrate
   bool AssemblePacket();  
-  // Get lidar a frame data
-  Points2D GetData();
-
- private:
-  const int kPointFrequence = 4500;
-  std::string frame_id_;
-  uint16_t timestamp_;
-  double speed_;
-  long error_times_;
-  LiDARFrameTypeDef pkg;
-  std::vector<uint8_t> data_tmp_;
-  std::array<PointData, POINT_PER_PACK> one_pkg_;
-  Points2D lidar_frame_data_;
-  std::vector<PointData> frame_tmp_;
-  bool is_pkg_ready_;
-  bool is_frame_ready_;
+  void FillLaserScanData(Points2D& src);
 };
 
 #endif  //__LIPKG_H

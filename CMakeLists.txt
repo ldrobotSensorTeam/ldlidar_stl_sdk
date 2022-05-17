@@ -12,7 +12,7 @@ message(STATUS "optional:-std=c++11")
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  ${CMAKE_CURRENT_SOURCE_DIR}/include/ldlidar_driver/include
 )
 
 ## Get current directory files
@@ -22,9 +22,9 @@ include_directories(
  # message("-- #define USE_SLBF")
 #endif()
 
-file(GLOB  MAIN_SRC ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(GLOB  LDLIDAR_DRIVER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/include/ldlidar_driver/*.cpp)
 
-add_executable(${PROJECT_NAME}  ${MAIN_SRC})
+add_executable(${PROJECT_NAME}  ${CMAKE_CURRENT_SOURCE_DIR}/src/demo.cpp ${LDLIDAR_DRIVER_SRC})
 target_link_libraries(${PROJECT_NAME} pthread)
 
 
