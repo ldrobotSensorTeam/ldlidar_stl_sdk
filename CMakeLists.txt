@@ -1,9 +1,20 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(ldlidar_stl)
 
-## Compile as C++11
-set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
-message(STATUS "optional:-std=c++11")
+set(VAL  1)
+if(${VAL} EQUAL 1)
+  set(CMAKE_BUILD_TYPE "Release") 
+  set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -std=c++11 -Wall")
+  #set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -std=c++11 -O3 -Wall")
+  message(STATUS "Mode: Release")
+  message(STATUS "optional:-std=c++11")
+else()
+  set(CMAKE_BUILD_TYPE "Debug") 
+  set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -std=c++11 -Wall -Wextra -Wpedantic -g2 -ggdb")
+  #set(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -std=c++11 -O2 -Wall -Wextra -Wpedantic -g2 -ggdb")
+  message(STATUS "Mode: Debug")
+  message(STATUS "optional:-std=c++11")
+endif()
 
 ###########
 ## Build ##
@@ -24,7 +35,7 @@ include_directories(
 
 file(GLOB  LDLIDAR_DRIVER_SRC ${CMAKE_CURRENT_SOURCE_DIR}/include/ldlidar_driver/*.cpp)
 
-add_executable(${PROJECT_NAME}  ${CMAKE_CURRENT_SOURCE_DIR}/src/demo.cpp ${LDLIDAR_DRIVER_SRC})
+add_executable(${PROJECT_NAME}  ${CMAKE_CURRENT_SOURCE_DIR}/src/linux_demo/demo.cpp ${LDLIDAR_DRIVER_SRC})
 target_link_libraries(${PROJECT_NAME} pthread)
 
 

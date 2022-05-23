@@ -32,16 +32,15 @@ $ sudo chmod 777 /dev/ttyUSB0
 ## 2. 编译
 
 ```bash
-$ mkdir build # 若工程目录下不存在build文件夹则需创建
-$ cd build
-$ cmake ../
-$ make
+$ cd ~/ldlidar_ws/ldlidar_stl_sdk
+
+$ ./auto_build.sh
 ```
 
 ## 3. 运行
   ``` bash
-  $ ./ldlidar_stl <serial_number>
-  # 例如 ./ldlidar_stl /dev/ttyS0
+  $ ./build/ldlidar_stl <serial_number>
+  # 例如 ./build/ldlidar_stl /dev/ttyS0
   ```
 
 # Instructions
@@ -76,15 +75,14 @@ $ sudo chmod 777 /dev/ttyUSB0
 ## step 2: build
 
 ``` bash
-$ mkdir build # If the build folder does not exist in the project directory, create one
-$ cd build
-$ cmake ../
-$ make
+$ cd ~/ldlidar_ws/ldlidar_stl_sdk
+
+$ ./auto_build.sh
 ```
 
 ## step 3: run
 
   ``` bash
-  $ ./ldlidar_stl <serial_number>
-  # eg ./ldlidar_stl /dev/ttyS0
+  $ ./build/ldlidar_stl <serial_number>
+  # eg ./build/ldlidar_stl /dev/ttyS0
   ```

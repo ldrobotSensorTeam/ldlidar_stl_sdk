@@ -22,16 +22,14 @@
 #ifndef __LIPKG_H
 #define __LIPKG_H
 
-// #include "ros_api.h"
-#include <stdint.h>
 
-#include <array>
-#include <iostream>
-#include <vector>
-#include <mutex>
-#include <functional>
+#include <chrono>
 
 #include "pointdata.h"
+#include "cmd_interface_linux.h"
+#include "tofbf.h"
+
+namespace ldlidar {
 
 enum {
   PKG_HEADER = 0x54,
@@ -59,7 +57,12 @@ class LiPkg {
  public:
   const int kPointFrequence = 4500;
 
-  LiPkg(std::string product_name);
+  LiPkg();
+  ~LiPkg();
+  // set product type (belong to enum class LDType)
+  void SetProductType(LDType type_number);
+  // get sdk version number
+  std::string GetSdkVersionNumber(void);
   // get Lidar spin speed (Hz)
   double GetSpeed(void); 
   // get lidar spind speed (degree per second) origin
@@ -77,24 +80,27 @@ class LiPkg {
   Points2D GetLaserScanData(void);
   
  private:
-  std::string product_name_;
+  LDType product_type_;
+  std::string sdk_pack_version_;
   uint16_t timestamp_;
   double speed_;
   long error_times_;
   bool is_frame_ready_;
   LiDARFrameTypeDef pkg_;
-  std::vector<uint8_t> data_tmp_;
   Points2D frame_tmp_;
   Points2D laser_scan_data_;
-  std::mutex  mutex_lock_;
+  std::mutex  mutex_lock1_;
+  std::mutex  mutex_lock2_;
 
    // parse single packet
   bool AnalysisOne(uint8_t byte);
   bool Parse(const uint8_t* data, long len);  
   // combine stantard data into data frames and calibrate
   bool AssemblePacket();  
-  void FillLaserScanData(Points2D& src);
+  void SetLaserScanData(Points2D& src);
 };
+
+} // namespace ldlidar
 
 #endif  //__LIPKG_H
 

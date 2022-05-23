@@ -11,8 +11,10 @@ else
     mkdir ${floder_name}
     cp ./*.md ./${floder_name}
     cp ./*.txt ./${floder_name}
+    cp ./*.sh ./${floder_name}
     cp ./LICENSE ./${floder_name}
     cp ./src ./${floder_name} -a
+    cp ./include ./${floder_name} -a
     zip -r ${floder_name}.zip ./${floder_name}
     rm -rf ./${floder_name}/
     echo "create ./${floder_name}.zip "

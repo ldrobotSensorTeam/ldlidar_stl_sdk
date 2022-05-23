@@ -19,17 +19,10 @@
  * limitations under the License.
  */
 
-#include <stdio.h>
-
-#include <iostream>
-#include <string>
-
-#include "cmd_interface_linux.h"
 #include "lipkg.h"
 
 int main(int argc, char **argv) {
-  std::cout << "[ldrobot] SDK Pack Version is " << "v2.3.0" << std::endl;
-  
+ 
   if (argc != 2) {
     std::cerr << "[ldrobot] please input: ./ldlidar_stl <serial_number>" << std::endl;
     std::cerr << "[ldrobot] example:" << std::endl;
@@ -39,40 +32,52 @@ int main(int argc, char **argv) {
     exit(EXIT_FAILURE);
   }
 
-  std::string product_name("LD_DTOF");
-  LiPkg *lidar = new LiPkg(product_name);
-  CmdInterfaceLinux cmd_port;
+  ldlidar::LiPkg *lidar = new ldlidar::LiPkg();
+  std::cout << "[ldrobot] SDK Pack Version is " << lidar->GetSdkVersionNumber() << std::endl;
+
+  ldlidar::CmdInterfaceLinux *cmd_port = new ldlidar::CmdInterfaceLinux();
   std::string port_name(argv[1]);
+  cmd_port->SetReadCallback(std::bind(&ldlidar::LiPkg::CommReadCallback, lidar, std::placeholders::_1, std::placeholders::_2));
 
-  if (port_name.empty()) {
-    std::cerr << "[ldrobot] ERROR,input <port_name> param is empty!" << std::endl;
-    exit(EXIT_FAILURE);
-  }
-
-  cmd_port.SetReadCallback(std::bind(&LiPkg::CommReadCallback, lidar, std::placeholders::_1, std::placeholders::_2));
-
-  if (cmd_port.Open(port_name)) {
+  if (cmd_port->Open(port_name)) {
     std::cout << "[ldrobot] open LDLiDAR device  " << port_name  << " success!"<< std::endl;
   }else {
     std::cerr << "[ldrobot] open LDLiDAR device  " << port_name << " fail!"<< std::endl;
     exit(EXIT_FAILURE);
   }
 
+  auto last_time = std::chrono::steady_clock::now();
+
   while (1) {
     if (lidar->IsFrameReady()) {
       lidar->ResetFrameReady();
-      std::cout << "[ldrobot] speed(Hz)： " << lidar->GetSpeed() << std::endl;
-      Points2D laser_scan = lidar->GetLaserScanData();
+      last_time = std::chrono::steady_clock::now();
+      std::cout << "[ldrobot] speed(Hz): " << lidar->GetSpeed() << std::endl;
+      ldlidar::Points2D laser_scan = lidar->GetLaserScanData();
       std::cout << "[ldrobot] laser_scan.size() " << laser_scan.size() << std::endl;
-      for (auto ele : laser_scan) {
-        std::cout << "[ldrobot] angle: " << ele.angle << " "
-                  << "distance(mm): " << ele.distance << " "
-                  << "intensity: " << (int)ele.intensity << " "
+      for (auto point : laser_scan) {
+        std::cout << "[ldrobot] angle: " << point.angle << " "
+                  << "distance(mm): " << point.distance << " "
+                  << "intensity: " << (int)point.intensity << " "
                   << std::endl;
       }
     }
-    // usleep(1000);  // sleep 1ms
+
+    if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()-last_time).count() > 1000) {
+			std::cout << "[ldrobot] lidar pub data is time out, please check lidar device" << std::endl;
+			exit(EXIT_FAILURE);
+		}
+
+    usleep(1000*100);  // sleep 100ms  == 10Hz
   }
+
+  cmd_port->Close();
+
+  delete lidar;
+  lidar = nullptr;
+  delete cmd_port;
+  cmd_port = 0;
+
   return 0;
 }
 
