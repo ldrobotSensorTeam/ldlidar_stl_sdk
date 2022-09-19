@@ -4,7 +4,6 @@
 
 # Exit on error
 set -e
-set -x
 
 if [ ! -e "./build" ];then
   mkdir build
