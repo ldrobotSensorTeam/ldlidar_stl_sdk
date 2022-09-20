@@ -7,15 +7,15 @@
 > - LDROBOT LiDAR LD19
 ## 0. 获取雷达的Linux SDK
 ```bash
-$ cd ~
+cd ~
 
-$ mkdir  ldlidar_ws
+mkdir  ldlidar_ws
 
-$ cd ldlidar_ws
+cd ldlidar_ws
 
-$ git clone  https://github.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
+git clone  https://github.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
 # 或者
-$ git clone  https://gitee.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
+git clone  https://gitee.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
 ```
 
 ## 1. 系统设置
@@ -24,23 +24,22 @@ $ git clone  https://gitee.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
 	- 实际使用时，根据雷达在你的系统中的实际挂载情况来设置，可以使用`ls -l /dev`命令查看.
 
 ``` bash
-$ cd ~/ldlidar_ws/ldlidar_stl_sdk
+cd ~/ldlidar_ws/ldlidar_stl_sdk
 
-$ sudo chmod 777 /dev/ttyUSB0
+sudo chmod 777 /dev/ttyUSB0
 ```
 
 ## 2. 编译
 
 ```bash
-$ cd ~/ldlidar_ws/ldlidar_stl_sdk
+cd ~/ldlidar_ws/ldlidar_stl_sdk
 
-$ ./auto_build.sh
+./auto_build.sh
 ```
 
 ## 3. 运行
   ``` bash
-  $ ./build/ldlidar_stl <serial_number>
-  # 例如 ./build/ldlidar_stl /dev/ttyS0
+  ./start_node.sh
   ```
 
 # Instructions
@@ -49,15 +48,15 @@ $ ./auto_build.sh
 > - LDROBOT LiDAR LD19
 ## 0. get LiDAR Linux SDK
 ```bash
-$ cd ~
+cd ~
 
-$ mkdir  ldlidar_ws
+mkdir  ldlidar_ws
 
-$ cd ldlidar_ws
+cd ldlidar_ws
 
-$ git clone  https://github.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
+git clone  https://github.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
 # or
-$ git clone  https://gitee.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
+git clone  https://gitee.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
 ```
 ## step 1: system setup
 - Connect the LiDAR to your system motherboard via an onboard serial port or usB-to-serial module (for example, CP2102 module).
@@ -67,22 +66,21 @@ $ git clone  https://gitee.com/ldrobotSensorTeam/ldlidar_stl_sdk.git
   - In actual use, the LiDAR can be set according to the actual mounted status of your system, you can use 'ls -l /dev' command to view.
 
 ``` bash
-$ cd ~/ldlidar_ws/ldlidar_stl_sdk
+cd ~/ldlidar_ws/ldlidar_stl_sdk
 
-$ sudo chmod 777 /dev/ttyUSB0
+sudo chmod 777 /dev/ttyUSB0
 ```
 
 ## step 2: build
 
 ``` bash
-$ cd ~/ldlidar_ws/ldlidar_stl_sdk
+cd ~/ldlidar_ws/ldlidar_stl_sdk
 
-$ ./auto_build.sh
+./auto_build.sh
 ```
 
 ## step 3: run
 
   ``` bash
-  $ ./build/ldlidar_stl <serial_number>
-  # eg ./build/ldlidar_stl /dev/ttyS0
+  ./start_node.sh
   ```
