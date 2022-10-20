@@ -28,6 +28,14 @@ uint64_t GetSystemTimeStamp(void) {
   return ((uint64_t)tmp.count());
 }
 
+void LidarPowerOn(void) {
+  LDS_LOG_DEBUG("Please Lidar Power On","");
+}
+
+void LidarPowerOff(void) {
+  LDS_LOG_DEBUG("Please Lidar Power Off","");
+}
+
 int main(int argc, char **argv) {
 
   if (argc < 4) {
@@ -103,6 +111,7 @@ int main(int argc, char **argv) {
   if (communication_mode == "serialcom") {
     if (node->Start(type_name, port_name, serial_baudrate, ldlidar::COMM_SERIAL_MODE)) {
       LDS_LOG_INFO("ldldiar node start is success","");
+      LidarPowerOn();
     } else {
       LD_LOG_ERROR("ldlidar node start is fail","");
       exit(EXIT_FAILURE);
@@ -110,13 +119,14 @@ int main(int argc, char **argv) {
   } else if (communication_mode == "networkcom_tcpclient") {
     if (node->Start(type_name, server_ip.c_str(), server_port.c_str(), ldlidar::COMM_TCP_CLIENT_MODE)) {
       LDS_LOG_INFO("ldldiar node start is success","");
+      LidarPowerOn();
     } else {
       LD_LOG_ERROR("ldlidar node start is fail","");
       exit(EXIT_FAILURE);
     }
   }
 
-  if (node->WaitLidarCommConnect(500)) {
+  if (node->WaitLidarCommConnect(3000)) {
     LDS_LOG_INFO("ldlidar communication is normal.","");
   } else {
     LDS_LOG_ERROR("ldlidar communication is abnormal.","");
@@ -126,7 +136,8 @@ int main(int argc, char **argv) {
   ldlidar::Points2D laser_scan_points;
   double lidar_spin_freq;
   while (ldlidar::LDLidarDriver::IsOk()) {
-    switch (node->GetLaserScanData(laser_scan_points, 1000)){
+
+    switch (node->GetLaserScanData(laser_scan_points, 1500)){
       case ldlidar::LidarStatus::NORMAL: 
         // get lidar normal data
         if (node->GetLidarSpinFreq(lidar_spin_freq)) {
@@ -134,10 +145,10 @@ int main(int argc, char **argv) {
         }
         //  output 2d point cloud data
         for (auto point : laser_scan_points) {
-          LDS_LOG_INFO("stamp:%ld,angle:%f,distance(mm):%d,intensity:%d", 
+          LDS_LOG_INFO("stamp:%lu,angle:%f,distance(mm):%d,intensity:%d", 
             point.stamp, point.angle, point.distance, point.intensity);
         }
-        LDS_LOG_INFO("size:%d,stamp_front:%ld, stamp_back:%ld",
+        LDS_LOG_INFO("size:%d,stamp_front:%lu, stamp_back:%lu",
           laser_scan_points.size(), laser_scan_points.front().stamp, laser_scan_points.back().stamp);
         break;
       case ldlidar::LidarStatus::ERROR:
@@ -158,6 +169,7 @@ int main(int argc, char **argv) {
   }
 
   node->Stop();
+  LidarPowerOff();
 
   delete node;
   node = nullptr;
