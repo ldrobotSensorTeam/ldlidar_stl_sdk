@@ -1,2 +1,4 @@
 .vscode/
 *.json
+build/**
+src/test_sys/build/**
